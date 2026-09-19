@@ -1,0 +1,11 @@
+﻿{
+  "mcpServers": {
+    "wanderlog": {
+      "command": "npx",
+      "args": ["wanderlog-mcp"],
+      "env": {
+        "WANDERLOG_COOKIE": "${WANDERLOG_COOKIE}"
+      }
+    }
+  }
+}

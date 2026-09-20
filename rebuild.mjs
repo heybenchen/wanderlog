@@ -52,7 +52,7 @@ const days = [
     places: [
       E("Gamcheon Culture Village", ["Gamcheon Culture Village"], "Colorful hillside village. Wear comfortable shoes, lots of stairs.", "10:00"),
       P("Blue House on The Stairs", ["Blue House on The Stairs Busan", "Blue House on the Stairs", "블루하우스온더스테어즈"], "Coffee shop in the Gamcheon area; drinks come with a mini hot air balloon."),
-      P("Jagalchi Market", ["Jagalchi Market Busan, South Korea", "Jagalchi Market"], "Fresh seafood upstairs. Pick from the tanks and they cook it for you."),
+      E("Jagalchi Market", ["Jagalchi Market Busan, South Korea", "Jagalchi Market"], "Fresh seafood upstairs. Pick from the tanks and they cook it for you."),
       P("Gukje Market", ["Gukje Market Busan", "Gukje Market", "국제시장"], "Ceramics."),
       P("Bosu Book Street", ["Bosu Book Street Busan", "Bosu Book Street", "보수동 책방골목"], "Old-town book alley, near Gukje Market."),
       P("MonsieurBubu Coffeestand", ["MonsieurBubu Coffeestand Busan", "Monsieur Bubu Coffee Stand", "MonsieurBubu"], "Coffee stop in Nampo."),
@@ -191,6 +191,14 @@ const days = [
   },
 ];
 
+// Fail fast on typos in pin names, before touching the trip.
+for (const d of days) for (const it of [...d.places, ...(d.extra ?? [])]) {
+  if (it.pin && !pins[it.pin]) throw new Error(`Unknown pin: ${it.pin}`);
+}
+const START = process.argv[3] ?? "0000-00-00";
+// Partial state from an interrupted run: clear before redoing that day.
+const cleanup = { "2026-10-14": { places: ["Gamcheon Culture Village"], notes: ["Blue House on The Stairs"] } };
+
 const transport = new StdioClientTransport({
   command: process.execPath,
   args: ["node_modules/wanderlog-mcp/dist/index.js"],
@@ -209,7 +217,12 @@ const dateShort = (iso) => "Oct " + Number(iso.slice(8));
 
 let matched = 0, fell = 0, fellNames = [];
 for (const d of days) {
+  if (d.date < START) continue;
   console.log(`\n== ${d.date} ${d.heading}`);
+  if (d.date === START && cleanup[d.date]) {
+    for (const p of cleanup[d.date].places) await call("wanderlog_remove_place", { place_ref: `${p} on ${dateShort(d.date)}` });
+    for (const t of cleanup[d.date].notes) await call("wanderlog_remove_note", { day: d.date, text: t });
+  }
   await call("wanderlog_rename_day", { day: d.date, heading: d.heading });
   const oldNotes = { "2026-10-12": "This is a full day", "2026-10-22": "Full day for shopping and eating" };
   if (oldNotes[d.date]) {

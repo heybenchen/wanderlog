@@ -1,13 +1,16 @@
-// Usage: node --env-file=.env call.mjs schemas
-//        node --env-file=.env call.mjs <calls.json>   (array of {tool, args}; "$KEY" in string args is replaced by the trip key)
+// Run from the repo root:
+//   node --env-file=.env scripts/call.mjs <calls.json> [tripKey]
+// calls.json is an array of {tool, args}; "$KEY" in string args is replaced by the trip key.
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+const SERVER = fileURLToPath(new URL("../node_modules/wanderlog-mcp/dist/index.js", import.meta.url));
 const [file, key = ""] = process.argv.slice(2);
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: ["node_modules/wanderlog-mcp/dist/index.js"],
+  args: [SERVER],
   env: { ...process.env },
   stderr: "ignore",
 });

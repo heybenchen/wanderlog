@@ -1,9 +1,14 @@
+// Early, one-off version of the Korea itinerary builder (see korea/README.md). It is out of date
+// and would overwrite the current trip if run; keep it for reference only.
+// Run from the repo root: node --env-file=.env korea/rebuild.mjs <tripKey> [startDate]
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+const SERVER = fileURLToPath(new URL("../node_modules/wanderlog-mcp/dist/index.js", import.meta.url));
 const KEY = process.argv[2];
-const pins = Object.fromEntries(JSON.parse(fs.readFileSync("korea-pins.json", "utf8")).pins.map((p) => [p.name, p]));
+const pins = Object.fromEntries(JSON.parse(fs.readFileSync(new URL("./pins.json", import.meta.url), "utf8")).pins.map((p) => [p.name, p]));
 
 // P(pinName, [search candidates], extra tip, start, end): a place from the user's list
 const P = (pin, q, tip, start, end) => ({ pin, q, tip, start, end });
@@ -201,7 +206,7 @@ const cleanup = { "2026-10-14": { places: ["Gamcheon Culture Village"], notes: [
 
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: ["node_modules/wanderlog-mcp/dist/index.js"],
+  args: [SERVER],
   env: { ...process.env },
   stderr: "ignore",
 });

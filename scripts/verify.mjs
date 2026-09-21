@@ -1,10 +1,12 @@
-﻿import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+﻿import { fileURLToPath } from "node:url";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+const SERVER = fileURLToPath(new URL("../node_modules/wanderlog-mcp/dist/index.js", import.meta.url));
 const cookie = process.env.WANDERLOG_COOKIE || "s%3Aplaceholder.invalid";
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: ["node_modules/wanderlog-mcp/dist/index.js"],
+  args: [SERVER],
   env: { ...process.env, WANDERLOG_COOKIE: cookie },
   stderr: "inherit",
 });
